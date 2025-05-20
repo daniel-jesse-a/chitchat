@@ -1,8 +1,10 @@
 import streamlit as st
 import os
-from rag_system import RAGSystem
-from document_processor import DocumentProcessor
-from config import Config
+from llama_rag_system import LlamaRAGSystem
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set page configuration
 st.set_page_config(
@@ -19,7 +21,7 @@ if "messages" not in st.session_state:
 @st.cache_resource
 def initialize_rag_system():
     try:
-        rag_system = RAGSystem()
+        rag_system = LlamaRAGSystem()
         return rag_system, None
     except Exception as e:
         return None, str(e)
@@ -39,13 +41,15 @@ with st.sidebar:
     """)
     
     st.header("Knowledge Base Info")
-    if os.path.exists(Config.KNOWLEDGE_BASE_PATH):
-        file_count = sum(len(files) for _, _, files in os.walk(Config.KNOWLEDGE_BASE_PATH))
+    knowledge_base_path = "./knowledge_base"
+    if os.path.exists(knowledge_base_path):
+        file_count = sum(len(files) for _, _, files in os.walk(knowledge_base_path))
         st.success(f"✅ Knowledge base found with {file_count} files")
     else:
-        st.error(f"❌ Knowledge base not found at {Config.KNOWLEDGE_BASE_PATH}")
+        st.error(f"❌ Knowledge base not found at {knowledge_base_path}")
     
-    if os.path.exists(Config.VECTOR_DB_PATH):
+    index_path = "./vector_db/llama_index"
+    if os.path.exists(index_path):
         st.success(f"✅ Vector database found")
     else:
         st.error(f"❌ Vector database not found. Please index your knowledge base first.")
@@ -53,8 +57,8 @@ with st.sidebar:
         if st.button("Index Knowledge Base"):
             with st.spinner("Indexing knowledge base... This may take a few minutes."):
                 try:
-                    processor = DocumentProcessor()
-                    processor.process_knowledge_base()
+                    rag_system, _ = initialize_rag_system()
+                    rag_system.process_knowledge_base()
                     st.success("✅ Knowledge base indexed successfully!")
                     st.rerun()
                 except Exception as e:
