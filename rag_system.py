@@ -2,7 +2,7 @@ from typing import List, Dict, Any
 import os
 from langchain.schema import Document
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from document_processor import DocumentProcessor
